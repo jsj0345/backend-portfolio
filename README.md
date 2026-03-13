@@ -42,11 +42,7 @@ OSORI는 사용자의 소비 내역을 기록하고 관리할 수 있도록 구�
 
 ## 시스템 아키텍처  
 
-Client(React)
-↓
-Spring Boot Server
-↓
-Oracle Database 
+Client(React) -> Spring Boot Server -> Oracle Database 
 
 
 
