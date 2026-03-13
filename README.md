@@ -1,2 +1,24 @@
-# backend-portfolio
-Backend portfolio project - Spring Boot based finance management application (OSoRi)
+# OSORI Backend Portfolio
+
+## 프로젝트 소개
+
+OSORI는 사용자의 소비 내역을 기록하고 관리할 수 있도록 구현한 가계부 서비스입니다.
+
+반복적으로 발생하는 지출을 효율적으로 관리하고, 사용자 로그인과 보안을 함께 고려하여 기능을 구현했습니다.
+
+이 프로젝트에서 저는 로그인 보안 및 고정 지출 관리 기능 구현에 중점을 두었습니다. 
+
+## 담당 역할 
+
+### 사용자 계정 및 인증 기능
+- 회원 가입 및 로그인 기능 구현
+- 소셜 로그인 기능 구현
+- JWT 기반 인증 처리
+- 로그인 실패 횟수 기반 계정 잠금 기능 구현
+- 휴면 계정 처리 기능 구현
+
+### 소비 관리 기능
+- 고정 지출 등록 / 수정 / 삭제 기능 구현
+- 고정 지출 데이터 조회 및 관리 로직 구현
+- MyBatis 기반 데이터 접근 로직 작성
+- Oracle DB 연동 및 SQL 작성 
