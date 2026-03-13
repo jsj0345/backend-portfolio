@@ -16,9 +16,38 @@ OSORI는 사용자의 소비 내역을 기록하고 관리할 수 있도록 구�
 - JWT 기반 인증 처리
 - 로그인 실패 횟수 기반 계정 잠금 기능 구현
 - 휴면 계정 처리 기능 구현
+- 회원 정보 수정
+- 마지막 로그인 시점 등록 기능 구현 
 
 ### 소비 관리 기능
 - 고정 지출 등록 / 수정 / 삭제 기능 구현
 - 고정 지출 데이터 조회 및 관리 로직 구현
 - MyBatis 기반 데이터 접근 로직 작성
 - Oracle DB 연동 및 SQL 작성 
+
+## 기술 스택
+
+### Backend
+- Java 17
+- Spring Boot
+- MyBatis
+- Oracle DB
+- JWT
+- Bcrypt
+
+### Tools
+- Git
+- GitHub
+- STS
+
+## 시스템 아키텍처  
+
+Client(React)
+↓
+Spring Boot Server
+↓
+Oracle Database 
+
+
+
+
