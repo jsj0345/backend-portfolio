@@ -210,6 +210,8 @@ WHEN LAST_LOGIN IS NULL THEN SYSDATE
 
 그 결과 로그인 시 마지막 로그인 날짜 갱신과 휴면 여부 확인이 한 번에 처리되도록 개선했습니다. 
 
+![휴면 계정 처리](https://github.com/user-attachments/assets/701e6aaa-236b-4410-ace1-44f8804b36a0)
+
 
 ## 일반 로그인과 소셜 로그인 처리
 
