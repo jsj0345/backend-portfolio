@@ -231,6 +231,7 @@ WHEN LAST_LOGIN IS NULL THEN SYSDATE
 그 결과 로그인 방식이 달라도 하나의 계정 상태를 기준으로 로그인 가능 여부를 판단할 수 있도록 정리했습니다. 
 
 ![계정 잠금 처리](https://github.com/user-attachments/assets/f09ccae7-a492-4340-8de5-4ff8f2a303c5)
+![연동 해제](https://github.com/user-attachments/assets/9f679879-0edb-429e-82d2-bbec872b1910)
 
 ## 프로젝트를 통해 배운 점
 
