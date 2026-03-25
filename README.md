@@ -222,8 +222,6 @@ public class FixedTransSchedulerConfig {
 	    if (lockUntil == null) {
 	        int result = dao.resetLoginLock2(sqlSession, loginId);
 	        
-	        System.out.println(result);
-	        
 	        if(result > 0) { // LOGIN_COUNT를 0으로 리셋 했다면 
 	        	return true; 
 	        } 
