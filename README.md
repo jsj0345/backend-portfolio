@@ -176,25 +176,31 @@ public class JwtUtil {
 
 이를 통해 로그인시 마지막 로그인 날짜 갱신과 휴면 여부 판단이 함께 이루어지도록 구현했습니다. 
 
-### 고정 지출 관리
+### 고정 지출 관리 및 자동화 시스템
 
-매달 반복적으로 발생하는 지출을 효율적으로 관리할 수 있도록 고정지출 관리기능을 구현했습니다.
+월세, 통신비, 구독 서비스처럼 매달 반복적으로 발생하는 지출을 효율적으로 관리하고 자동으로 가계부에 반영되도록 구현했습니다.
 
-- 고정지출 등록 / 조회 / 수정 / 삭제
+- 고정 지출 CRUD 구현 : 사용자가 반복 지출 내역을 한 번 등록하면 지속적으로 관리(조회/수정/삭제)할 수 있도록 기능을 구현했습니다.
 
-월세, 통신비, 구독 서비스와 같이 반복적으로 발생하는 소비 항목을
-한 번 등록하면 지속적으로 관리할 수 있도록 구성했습니다. 
+- Spring Scheduler 기반 자동화 : 사용자가 등록한 고정 지출 내역이 매월 지정된 결제일에 개인 가계부 및 캘린더에 자동 등록되도록 @Scheduled를
+활용한 배치 프로세스를 구축했습니다.
 
-### 고정 지출 데이터 처리
+- MERGE INTO 쿼리를 통한 무결성 보장 : 스케줄러 동작 시 서버 재시작이나 로직 중복 실행 등의 예외 상황이 발생하더라도, 동일한 지출 내역이 중복으로 삽입되지 않도록 Oracle DB의 MERGE INTO 구문을 활용하여 데이터 무결성을 보장했습니다.
 
-고정 지출 데이터를 안정적으로 저장하고 조회할 수 있도록
-MyBatis 기반 데이터 접근 로직과 Oracle SQL을 작성했습니다.
+```java
+@Component
+@RequiredArgsConstructor
+public class FixedTransSchedulerConfig {
 
-- MyBatis Mapper 기반 데이터 접근 로직 구현
-- Oracle DB 연동 및 SQL 작성
-- 사용자별 고정 지출 데이터 조회 및 관리 로직 구현
+  private final TransServiceImpl transService;
 
-사용자별 소비 데이터를 구분하여 조회하고 관리할 수 있도록 작성했습니다.
+  @Scheduled(cron = "0 * * * * *") // 매분 0초마다 실행
+  public void runDailyFixedTransToMyTrans() {
+    transService.mergeFixedToMyTrans();
+  }
+}
+
+```
 
 ## 트러블 슈팅
 
