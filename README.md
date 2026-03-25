@@ -383,11 +383,13 @@ int rowUpdate = dao.updateDate(sqlSession,user); // 업데이트 된 행이 있�
     WHERE TO_NUMBER(TO_CHAR(TRUNC(SYSDATE), 'DD')) = LEAST(PAY_DAY, TO_NUMBER(TO_CHAR(LAST_DAY(TRUNC(SYSDATE)), 'DD')))
   ) s
   ON (
+	/* 오늘 날짜로 등록된 동일한 고정 지출이 있다면 INSERT 무시 */ 
     m.FIXED_ID = s.FIXED_ID
     AND TRUNC(m.TRANS_DATE) = s.TRANS_DATE
     AND m.USER_ID = s.USER_ID
   )
   WHEN NOT MATCHED THEN
+	/* 매칭되는 데이터가 없을 경우에만 새로운 고정 지출 내역 추가 */ 
     INSERT (TRAN_ID, TITLE, TRANS_DATE, ORIGINAL_AMOUNT, IS_SHARED, CATEGORY, TYPE, MEMO, USER_ID, FIXED_ID)
     VALUES (SEQ_MYTRANS.NEXTVAL, s.TITLE, s.TRANS_DATE, s.AMOUNT, 'N', s.CATEGORY, 'OUT', '고정지출 자동등록', s.USER_ID, s.FIXED_ID)
 </insert>
