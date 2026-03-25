@@ -98,6 +98,37 @@ Client(React) -> Spring Boot Server -> Oracle Database
 
 비밀번호 확인 외에도 계정상태를 함께 확인하여 로그인 가능 여부를 판단하도록 구성했습니다.
 
+안전한 인증을 위해 서명된 JWT 토큰을 발급하고, 만료 기간을 설정하여 보안을 강화했습니다.
+```java
+@Component 
+public class JwtUtil {
+
+  
+	
+	@Value("${jwt.secret:mySecretkeybackupTokenkey123}")
+	private String secret; 
+	
+	//보안을 위해 토큰만료기간을 두어 탈취되었을때도 무한정 사용할 수 없도록 하기 위함
+	@Value("${jwt.expiration:1800000}")
+	private long expiration;
+
+    //사용자 로그인시 jwt 토큰을 생성하는 메소드
+	//매개변수 : loginId : 토큰에 포함할 사용자 식별자데이터
+	//반환값 : 생성된 JWT 토큰 반환열
+	public String generateToken(String loginId) {
+		Date now = new Date(); // 현재 시간을 토큰 발급시간으로 지정하기
+		Date expiryDate = new Date(now.getTime()+expiration); // 현재시간 + 만료시간
+		
+		//JWT 토큰 빌더를 이용해서 사용
+		return Jwts.builder()
+					.setSubject(loginId) 
+					.setIssuedAt(now) 
+					.setExpiration(expiryDate) 
+					.signWith(getSignKey()) //signWith : 생성된 암호화키로 토크에 디지털 서명(위조 방지) 
+					.compact(); // 최종적으로 JWT 문자열형태로 압축하여 반환한다. 
+	}
+```
+
 ### 로그인 처리 흐름
 
 1. 로그인 요청
