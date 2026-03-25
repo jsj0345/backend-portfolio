@@ -245,7 +245,8 @@ MyBatis 기반 데이터 접근 로직과 Oracle SQL을 작성했습니다.
 
 테스트 결과, 로그인 실패 횟수와 계정 잠금 시간이 의도한 대로 정상 처리되는 것을 확인했습니다.
 
-![계정 잠금 처리](https://github.com/user-attachments/assets/f09ccae7-a492-4340-8de5-4ff8f2a303c5)
+![계정 잠금 처리](https://github.com/user-attachments/assets/db6a9964-52da-49b8-a19f-72e053ae0557)
+
 
 ## 휴면 계정 처리
 
@@ -362,8 +363,6 @@ int rowUpdate = dao.updateDate(sqlSession,user); // 업데이트 된 행이 있�
 ```
 
 그 결과 로그인 방식이 달라도 하나의 계정 상태를 기준으로 로그인 가능 여부를 판단할 수 있도록 정리했습니다. 
-
-![연동 해제](https://github.com/user-attachments/assets/9f679879-0edb-429e-82d2-bbec872b1910)
 
 ## 프로젝트를 통해 배운 점
 
