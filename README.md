@@ -338,7 +338,7 @@ WHEN LAST_LOGIN IS NULL THEN SYSDATE
 ```java
 int rowUpdate = dao.updateDate(sqlSession,user); // 업데이트 된 행이 있는지 판별
 	    
-	    if(rowUpdate > 0) { // lastLogin 날짜 갱신 됐는가 ? 
+	    if(rowUpdate > 0) { // 마지막 로그인 시점이 갱신 되었는지를 판별 
 
 	    	
 	    	user = dao.findLoginIdByEmail(sqlSession, email); // 업데이트 된 유저 객체 한번 더 호출
