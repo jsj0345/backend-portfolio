@@ -177,7 +177,36 @@ MyBatis 기반 데이터 접근 로직과 Oracle SQL을 작성했습니다.
 
 따라서 로그인 처리 로직은 다음과 같이 정리했습니다.
 
-비밀번호가 맞는 경우 계정잠금 여부를 확인한 뒤 로그인 실패 횟수를 초기화
+해결 방안 : 비밀번호가 맞는 경우 계정잠금 여부를 확인한 뒤 로그인 실패 횟수를 초기화
+
+```java
+@Override
+	public boolean compareLockUntil2(Timestamp lockUntil, String loginId) {
+		
+		// 1. 잠금 시간 자체가 없으면 바로 로그인 가능
+	    if (lockUntil == null) {
+	        int result = dao.resetLoginLock2(sqlSession, loginId);
+	        
+	        System.out.println(result);
+	        
+	        if(result > 0) { // LOGIN_COUNT를 0으로 리셋 했다면 
+	        	return true; 
+	        } 
+	    	
+	        return false;
+	    	
+	    }
+```
+
+```xml
+<update id="resetLoginLock2" parameterType="String">
+  		UPDATE USERS
+  		SET LOGIN_COUNT = 0
+  		WHERE LOGIN_ID = #{loginId}
+  	</update>
+```
+
+
 
 이후 아래 상황을 기준으로 테스트를 진행했습니다.
 
@@ -208,6 +237,24 @@ WHEN LAST_LOGIN IS NULL THEN SYSDATE
 
 또한 마지막 로그인 날짜 차이에 따라 휴면 여부와 날짜 갱신이 함께 이루어지도록 수정했습니다.
 
+```xml
+<update id="updateDate" parameterType="User">
+  		UPDATE USERS
+  		SET 
+  			STATUS 	= 	CASE
+  							WHEN SYSDATE - LAST_LOGIN &gt;= 30 THEN 'H'
+  							ELSE STATUS
+  					 	END,
+  			LAST_LOGIN = CASE
+  			    			WHEN SYSDATE - LAST_LOGIN &lt; 30 THEN SYSDATE
+  			    			WHEN LAST_LOGIN IS NULL THEN SYSDATE
+  			    			ELSE LAST_LOGIN
+  			    		 END
+  		WHERE LOGIN_ID = #{loginId}    		 			 	
+  	</update>
+
+```
+
 그 결과 로그인 시 마지막 로그인 날짜 갱신과 휴면 여부 확인이 한 번에 처리되도록 개선했습니다. 
 
 ![휴면 계정 처리](https://github.com/user-attachments/assets/701e6aaa-236b-4410-ace1-44f8804b36a0)
@@ -222,8 +269,6 @@ WHEN LAST_LOGIN IS NULL THEN SYSDATE
 소셜 로그인을 해도 로그인이 차단되어야 했고,
 이미 탈퇴한 회원은 일반 로그인과 소셜 로그인 모두 사용할 수 없도록 처리해야 했습니다.
 
-또한 소셜 로그인 연동을 해제한 뒤 다시 연동하는 경우도 고려해야 했습니다.
-
 이 문제를 해결하기 위해 소셜 로그인 처리 과정에서도 기존 회원 정보를 다시 조회한 뒤
 
 - 계정 잠금 여부 확인
@@ -231,6 +276,59 @@ WHEN LAST_LOGIN IS NULL THEN SYSDATE
 - 기존 회원 정보와의 연결 여부 확인
 
 을 함께 수행하도록 구성했습니다.
+
+```java
+      // 3. DB 가입 확인 및 처리 (이메일 기준)
+	    User user = dao.findLoginIdByEmail(sqlSession, email); // 회원 조회
+	    
+	    Map<String, Object> result = new HashMap<>();
+	    
+	    if (user == null) { // 신규 회원이면 
+
+	    		result.put("isNewMember", true); 
+	    		result.put("email",email);
+	    		result.put("nickName", nickName);
+	    		result.put("providerUserId", providerUserId); 
+	    		result.put("loginType","KAKAO");
+	    		
+	    		return result;
+	    } else {
+	    	
+	    		if(user.getLockUntil() != null) { // 카카오로 로그인을 했어도 잠금 시간이 설정 되어 있는지 확인해야 한다.
+	    			boolean canLogin = compareLockUntil(user.getLockUntil(), user.getLoginId());
+	    			
+	    			if(!canLogin) { // false 일 때만 메시지 띄우기 
+	    				result.put("message", "잠금 모드가 해제 되는 시간은 " + user.getLockUntil() + "입니다.");
+	    				return result; 
+	    			}
+	    		}
+```
+
+```java
+int rowUpdate = dao.updateDate(sqlSession,user); // 업데이트 된 행이 있는지 판별
+	    
+	    if(rowUpdate > 0) { // lastLogin 날짜 갱신 됐는가 ? 
+
+	    	
+	    	user = dao.findLoginIdByEmail(sqlSession, email); // 업데이트 된 유저 객체 한번 더 호출
+	    	
+	    	// 4. 전용 JWT 발행
+		    String token = jwtUtil.generateToken(user.getLoginId());
+		    user.setPassword(null);
+		    result.put("token", token);
+		    result.put("user", user);
+		    
+	        if("H".equals(((User)result.get("user")).getStatus())) {
+        			result.put("message", "휴면 회원 입니다. 프로필 설정 페이지에서 휴면 해제 후, 서비스 이용 가능합니다.");
+	        } else if ("N".equals(((User)result.get("user")).getStatus())) {
+	        		result.put("message", "탈퇴한 회원입니다."); 
+	        }
+		   
+		    return result; // 날짜가 갱신이 되면 로그인 성공 처리 
+
+	    	
+	    }
+```
 
 그 결과 로그인 방식이 달라도 하나의 계정 상태를 기준으로 로그인 가능 여부를 판단할 수 있도록 정리했습니다. 
 
