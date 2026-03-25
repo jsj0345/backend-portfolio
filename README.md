@@ -216,19 +216,19 @@ public class FixedTransSchedulerConfig {
 
 ```java
 @Override
-	public boolean compareLockUntil2(Timestamp lockUntil, String loginId) {
+public boolean compareLockUntil2(Timestamp lockUntil, String loginId) {
 		
-		// 1. 잠금 시간 자체가 없으면 바로 로그인 가능
-	    if (lockUntil == null) {
-	        int result = dao.resetLoginLock2(sqlSession, loginId);
+	// 1. 잠금 시간 자체가 없으면 바로 로그인 가능
+	if (lockUntil == null) {
+		int result = dao.resetLoginLock2(sqlSession, loginId);
 	        
-	        if(result > 0) { // LOGIN_COUNT를 0으로 리셋 했다면 
-	        	return true; 
-	        } 
+		if(result > 0) { // LOGIN_COUNT를 0으로 리셋 했다면 
+			return true; 
+		} 
 	    	
-	        return false;
+		return false;
 	    	
-	    }
+	}
 ```
 
 ```xml
