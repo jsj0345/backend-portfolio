@@ -414,43 +414,6 @@ int rowUpdate = dao.updateDate(sqlSession,user); // 업데이트 된 행이 있�
 
 그 결과 로그인 방식이 달라도 하나의 계정 상태를 기준으로 로그인 가능 여부를 판단할 수 있도록 정리했습니다. 
 
-## 스케줄러 설정 오류와 데이터 중복 방지
-
-기능을 빠르게 테스트하기 위해 '1분 주기'로 설정해 두었던 스케줄러가 실제 운영 서버에 그대로 배포되면서 하루에 1440번이나 과다 실행되는 문제가 발생했습니다. 
-
-스케줄러 제어에는 문제가 있었지만, 다행히 동일한 지출 내역이 중복으로 쌓이는 치명적인 데이터 오류는 발생하지 않았습니다. 
-기능을 처음 설계할 때 스케줄러가 중복으로 실행될 수 있는 예외 상황을 미리 고려하여, Oracle DB의 MERGE INTO 구문으로 동일한 데이터는 무시하도록 방어 로직을 작성해 두었기 때문입니다. 
-
-```xml
-<insert id="mergeFixedToMyTrans">
-  MERGE INTO MYTRANS m
-  USING (
-    SELECT FIXED_ID, USER_ID, NAME AS TITLE, TRUNC(SYSDATE) AS TRANS_DATE, AMOUNT, CATEGORY
-    FROM FIXEDTRANS
-    WHERE TO_NUMBER(TO_CHAR(TRUNC(SYSDATE), 'DD')) = LEAST(PAY_DAY, TO_NUMBER(TO_CHAR(LAST_DAY(TRUNC(SYSDATE)), 'DD')))
-  ) s
-  ON (
-	/* 오늘 날짜로 등록된 동일한 고정 지출이 있다면 INSERT 무시 */ 
-    m.FIXED_ID = s.FIXED_ID
-    AND TRUNC(m.TRANS_DATE) = s.TRANS_DATE
-    AND m.USER_ID = s.USER_ID
-  )
-  WHEN NOT MATCHED THEN
-	/* 매칭되는 데이터가 없을 경우에만 새로운 고정 지출 내역 추가 */ 
-    INSERT (TRAN_ID, TITLE, TRANS_DATE, ORIGINAL_AMOUNT, IS_SHARED, CATEGORY, TYPE, MEMO, USER_ID, FIXED_ID)
-    VALUES (SEQ_MYTRANS.NEXTVAL, s.TITLE, s.TRANS_DATE, s.AMOUNT, 'N', s.CATEGORY, 'OUT', '고정지출 자동등록', s.USER_ID, s.FIXED_ID)
-</insert>
-```
-
-예상치 못한 설정 오류에서도 데이터의 정확성을 안전하게 지켜낼 수 있었습니다.
-
-## 프로젝트를 통해 배운 점
-
-이번 프로젝트를 진행하며 단순히 눈에 보이는 기능을 완성하는 것을 넘어, 실제 서비스의 운영과 안정성을 미리 고민하는 백엔드 설계의 중요성을 깊이 체감했습니다. 특히 일반 로그인과 소셜 로그인처럼 인증 진입점이 다르더라도 계정 잠금, 휴면, 탈퇴와 같은 사용자 상태는 하나의 통일된 기준으로 제어해야 비즈니스 로직의 일관성과 보안을 유지할 수 있다는 점을 배웠습니다.
-
-또한, 테스트용 스케줄러 설정이 운영 서버에 그대로 배포되어 과다 실행되었던 상황을 겪으며 로컬 환경과 운영 환경 설정의 철저한 분리와 배포 전 점검의 필요성을 절실히 느꼈습니다. 
-다행히 사전에 작성해 둔 데이터베이스 단의 MERGE INTO 쿼리 덕분에 중복 데이터가 쌓이는 것을 막을 수 있었고, 이를 통해 애플리케이션 코드에 예상치 못한 문제가 생기더라도 DB 단에서 한 번 더 막아주는 설계가 서비스 장애를 예방하는 안전장치라는 것을 깨달았습니다. 
-
   
 
   
