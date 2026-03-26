@@ -103,8 +103,8 @@ Client(React) -> Spring Boot Server -> Oracle Database
 @Component 
 public class JwtUtil {
 
-	@Value("${jwt.secret:mySecretkeybackupTokenkey123}")
-	private String secret; 
+	@Value("${jwt.secret}")
+	private String secret; // 보안을 위해 시크릿 키는 노출 시키지 않았습니다.
 	
 	//보안을 위해 토큰만료기간을 두어 탈취되었을때도 무한정 사용할 수 없도록 하기 위함
 	@Value("${jwt.expiration:1800000}")
