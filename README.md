@@ -233,10 +233,10 @@ public boolean compareLockUntil2(Timestamp lockUntil, String loginId) {
 
 ```xml
 <update id="resetLoginLock2" parameterType="String">
-  		UPDATE USERS
-  		SET LOGIN_COUNT = 0
-  		WHERE LOGIN_ID = #{loginId}
-  	</update>
+	UPDATE USERS
+	SET LOGIN_COUNT = 0
+	WHERE LOGIN_ID = #{loginId}
+</update>
 ```
 
 
@@ -273,20 +273,19 @@ WHEN LAST_LOGIN IS NULL THEN SYSDATE
 
 ```xml
 <update id="updateDate" parameterType="User">
-  		UPDATE USERS
-  		SET 
-  			STATUS 	= 	CASE
-  							WHEN SYSDATE - LAST_LOGIN &gt;= 30 THEN 'H'
-  							ELSE STATUS
-  					 	END,
-  			LAST_LOGIN = CASE
-  			    			WHEN SYSDATE - LAST_LOGIN &lt; 30 THEN SYSDATE
-  			    			WHEN LAST_LOGIN IS NULL THEN SYSDATE
-  			    			ELSE LAST_LOGIN
-  			    		 END
-  		WHERE LOGIN_ID = #{loginId}    		 			 	
-  	</update>
-
+	UPDATE USERS
+	SET 
+	STATUS 	= 	CASE
+					WHEN SYSDATE - LAST_LOGIN &gt;= 30 THEN 'H'
+					ELSE STATUS
+					END,
+	LAST_LOGIN = CASE
+					WHEN SYSDATE - LAST_LOGIN &lt; 30 THEN SYSDATE
+					WHEN LAST_LOGIN IS NULL THEN SYSDATE
+					ELSE LAST_LOGIN
+					END
+	WHERE LOGIN_ID = #{loginId}    		 			 	
+</update>
 ```
 
 그 결과 로그인 시 마지막 로그인 날짜 갱신과 휴면 여부 확인이 한 번에 처리되도록 개선했습니다. 
