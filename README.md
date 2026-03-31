@@ -274,16 +274,15 @@ WHEN LAST_LOGIN IS NULL THEN SYSDATE
 ```xml
 <update id="updateDate" parameterType="User">
 	UPDATE USERS
-	SET 
-	STATUS 	= 	CASE
+	SET STATUS = CASE
 					WHEN SYSDATE - LAST_LOGIN &gt;= 30 THEN 'H'
 					ELSE STATUS
-					END,
+				 END,
 	LAST_LOGIN = CASE
 					WHEN SYSDATE - LAST_LOGIN &lt; 30 THEN SYSDATE
 					WHEN LAST_LOGIN IS NULL THEN SYSDATE
 					ELSE LAST_LOGIN
-					END
+				 END
 	WHERE LOGIN_ID = #{loginId}    		 			 	
 </update>
 ```
